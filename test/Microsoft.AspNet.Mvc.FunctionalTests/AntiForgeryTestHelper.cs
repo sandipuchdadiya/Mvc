@@ -16,8 +16,8 @@ namespace Microsoft.AspNet.Mvc.FunctionalTests
         {
             return RetrieveAntiForgeryTokens(
                 htmlContent,
-                attribute => (attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase) ||
-                    attribute.Value.EndsWith($"HtmlEncode[[{ actionUrl }]]", StringComparison.OrdinalIgnoreCase)))
+                attribute => attribute.Value.EndsWith(actionUrl, StringComparison.OrdinalIgnoreCase) ||
+                    attribute.Value.EndsWith($"HtmlEncode[[{ actionUrl }]]", StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
         }
 

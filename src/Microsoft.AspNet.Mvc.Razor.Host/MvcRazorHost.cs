@@ -90,7 +90,7 @@ namespace Microsoft.AspNet.Mvc.Razor
                     WriteTagHelperAsyncMethodName = "WriteTagHelperAsync",
                     WriteTagHelperToAsyncMethodName = "WriteTagHelperToAsync",
 
-                    // IHtmlHelper<TModel> is also not accessible here.
+                    // Can't use nameof because IHtmlHelper is (also) not accessible here.
                     MarkAsHtmlEncodedMethodName = HtmlHelperPropertyName + ".Raw",
                 })
             {

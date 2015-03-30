@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Text;
 using Microsoft.AspNet.Mvc.Razor;
 using Microsoft.AspNet.Razor.Runtime.TagHelpers;
+using Microsoft.Framework.Internal;
 using Microsoft.Framework.WebEncoders;
 
 namespace Microsoft.AspNet.Mvc.TagHelpers
@@ -23,52 +23,22 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
         /// <param name="value">The <see cref="object"/> to write.</param>
         /// <returns><paramref name="content"/> after the write operation has completed.</returns>
         /// <remarks>
-        /// <paramref name="value"/>s of type <see cref="Rendering.HtmlString"/> are written without encoding and the
-        /// <see cref="HelperResult.WriteTo(TextWriter)"/> is invoked for <see cref="HelperResult"/> types.
-        /// For all other types, the encoded result of <see cref="object.ToString"/> is written to the
-        /// <paramref name="writer"/>.
+        /// <paramref name="value"/>s of type <see cref="Rendering.HtmlString"/> are written without encoding and
+        /// <see cref="HelperResult.WriteTo"/> is invoked for <see cref="HelperResult"/> types. For all other types,
+        /// the encoded result of <see cref="object.ToString"/> is written to the <paramref name="content"/>.
         /// </remarks>
         public static TagHelperContent Append(
-            this TagHelperContent content,
-            IHtmlEncoder encoder,
-            Encoding encoding,
+            [NotNull] this TagHelperContent content,
+            [NotNull] IHtmlEncoder encoder,
+            [NotNull] Encoding encoding,
             object value)
         {
-            using (var writer = new ContentWrapperTextWriter(content, encoding))
+            using (var writer = new TagHelperContentWrapperTextWriter(encoding, content))
             {
                 RazorPage.WriteTo(writer, encoder, value, escapeQuotes: true);
             }
 
             return content;
-        }
-
-        // Must be kept consistent with RazorPage.TagHelperContentWrapperTextWriter.
-        private class ContentWrapperTextWriter : TextWriter
-        {
-            public ContentWrapperTextWriter(TagHelperContent content, Encoding encoding)
-            {
-                Content = content;
-                Encoding = encoding;
-            }
-
-            public TagHelperContent Content { get; }
-
-            public override Encoding Encoding { get; }
-
-            public override void Write(string value)
-            {
-                Content.Append(value);
-            }
-
-            public override void Write(char value)
-            {
-                Content.Append(value.ToString());
-            }
-
-            public override string ToString()
-            {
-                return Content.ToString();
-            }
         }
     }
 }

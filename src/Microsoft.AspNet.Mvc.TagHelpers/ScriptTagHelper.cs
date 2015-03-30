@@ -236,6 +236,9 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             var urls = GlobbingUrlBuilder.BuildUrlList(Src, SrcInclude, SrcExclude);
             foreach (var url in urls)
             {
+                // "url" values come from bound attributes and globbing. Must always be non-null.
+                Debug.Assert(url != null);
+
                 var content = originalContent;
                 if (!string.Equals(url, Src, StringComparison.OrdinalIgnoreCase))
                 {
@@ -271,7 +274,7 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
 
                 foreach (var src in fallbackSrcs)
                 {
-                    // "src" values come from bound attributes and globbing. Must always be non-null.
+                    // Fallback "src" values come from bound attributes and globbing. Must always be non-null.
                     Debug.Assert(src != null);
 
                     builder.Append("<script");
@@ -342,19 +345,17 @@ namespace Microsoft.AspNet.Mvc.TagHelpers
             foreach (var attribute in attributes)
             {
                 var attributeValue = attribute.Value;
-                if (string.Equals(attribute.Key, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
+                if (FileVersion == true &&
+                    string.Equals(attribute.Key, SrcAttributeName, StringComparison.OrdinalIgnoreCase))
                 {
+                    // "src" values come from bound attributes and globbing. So anything but a non-null string is
+                    // unexpected but could happen if another helper targeting the same element does something odd.
+                    // Pass through existing value in that case.
                     var attributeStringValue = attributeValue as string;
-
-                    // "src" values come from bound attributes and globbing. Must always be non-null strings.
-                    Debug.Assert(attributeStringValue != null);
-
-                    if (FileVersion == true)
+                    if (attributeStringValue != null)
                     {
-                        attributeStringValue = _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
+                        attributeValue = _fileVersionProvider.AddFileVersionToPath(attributeStringValue);
                     }
-
-                    attributeValue = attributeStringValue;
                 }
 
                 AppendAttribute(builder, attribute.Key, attributeValue, escapeQuotes: false);

@@ -410,21 +410,18 @@ namespace Microsoft.AspNet.Mvc.Razor
                     // In this case the text likely came directly from the Razor source. Since the original string is
                     // an attribute value that may have been quoted with single quotes, must handle any double quotes
                     // in the value. Writing the value out surrounded by double quotes.
+                    //
+                    // Do not combine following condition with check of escapeQuotes; htmlString.ToString() can be
+                    // expensive when the HtmlString is created with a StringCollectionTextWriter.
                     var stringValue = htmlString.ToString();
                     if (stringValue.Contains("\""))
                     {
                         writer.Write(stringValue.Replace("\"", "&quot;"));
+                        return;
                     }
-                    else
-                    {
-                        htmlString.WriteTo(writer);
-                    }
-                }
-                else
-                {
-                    htmlString.WriteTo(writer);
                 }
 
+                htmlString.WriteTo(writer);
                 return;
             }
 
@@ -812,34 +809,6 @@ namespace Microsoft.AspNet.Mvc.Razor
             if (PreviousSectionWriters == null)
             {
                 throw new InvalidOperationException(Resources.FormatRazorPage_MethodCannotBeCalled(methodName));
-            }
-        }
-
-        private class TagHelperContentWrapperTextWriter : TextWriter
-        {
-            public TagHelperContentWrapperTextWriter(Encoding encoding)
-            {
-                Content = new DefaultTagHelperContent();
-                Encoding = encoding;
-            }
-
-            public TagHelperContent Content { get; }
-
-            public override Encoding Encoding { get; }
-
-            public override void Write(string value)
-            {
-                Content.Append(value);
-            }
-
-            public override void Write(char value)
-            {
-                Content.Append(value.ToString());
-            }
-
-            public override string ToString()
-            {
-                return Content.ToString();
             }
         }
     }
